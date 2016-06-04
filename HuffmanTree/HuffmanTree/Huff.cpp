@@ -1,3 +1,6 @@
+/*----------------------------------------------------------------------------------------*/
+/*此代码运行结果与实验指导的不一样，但是在下相信本代码运行出的结果是对的*/
+/*---------------------------------------------------------------------------------------*/
 #include<iostream>
 #include<string.h>
 #include<stdio.h>
@@ -10,34 +13,47 @@ typedef struct
 	int parent, lchild, rchild;
 }HTNode, *HuffmanTree;
 
-void InsertSearch(HuffmanTree &HT, int n)
-{
-	int i, j;
-	for (i = 2; i <=n ; ++i)
-	{
-		if (HT[i].weight < HT[i -1].weight)
-		{
-			HT[0] = HT[i];
-			HT[i] = HT[i - 1];
-			for (j = i - 2; HT[0].weight < HT[j].weight; --j)
-				HT[j + 1] = HT[j];
-			HT[j + 1] = HT[0];
-		}
-	}
-}
-
 void Select(HuffmanTree &HT, int area, int &s1, int &s2)
 {
-	int i, flag = 1;
-	for (i = 1; (i <= area) || (flag == 1); i++)
+	int a, check;
+	//s1部分
+	//检查数组内第一个双亲为零的元素，并将其weight赋值给check
+	for (a = 1; a <= area; a++)
 	{
-		if (HT[i].parent = 0)
+		if (HT[a].parent == 0)
 		{
-			s1 = i;
-			s2 = i + 1;
-			flag = 0;
+			check = HT[a].weight;
+			s1 = a;
+			break;
 		}
-		else continue;
+	}
+	//check对数组的每一个元素的weight进行对比，若有weight比check小，weight赋值于check，a赋值于s1，然后继续进行对比至最后
+	for (a = 1; a <= area; a++)
+	{
+		if (check > HT[a].weight && HT[a].parent == 0)
+		{
+			check = HT[a].weight;
+			s1 = a;
+		}
+	}
+	HT[s1].parent = 1;    //先将已经赋予s1的元素的parent置为1，以防s2重复赋值
+	//s2部分，重复以上步骤
+	for (a = 1; a <= area; a++)
+	{
+		if (HT[a].parent == 0)
+		{
+			check = HT[a].weight;
+			s2 = a;
+			break;
+		}
+	}
+	for (a = 1; a <= area; a++)
+	{
+		if (check > HT[a].weight && HT[a].parent == 0)
+		{
+			check = HT[a].weight;
+			s2 = a;
+		}
 	}
 }
 
@@ -45,7 +61,7 @@ void CreateHuffmanTree(HuffmanTree &HT, int n)
 {
 	int m, i, s1, s2;
 	if (n <= 1)
-		return;
+		return;     //要注意return之后要做出处理
 	m = 2 * n - 1;
 	HT = new HTNode[m + 1];
 	for (i = 1; i <= m; ++i)
@@ -54,10 +70,9 @@ void CreateHuffmanTree(HuffmanTree &HT, int n)
 		HT[i].lchild = 0; 
 		HT[i].rchild = 0;
 	}
+	cout << "请输入叶子节点的权值：" << endl;
 	for (i = 1; i <= n; ++i)
 		cin >> HT[i].weight;
-
-	InsertSearch(HT, n);
 
 	for (i = n + 1; i <= m; ++i)
 	{
@@ -72,6 +87,7 @@ void CreateHuffmanCode(HuffmanTree HT, HuffmanCode &HC, int n)
 {
 	int i, c, start, f;
 	char *cd;
+	HC = new char *[n + 1];
 	cd = new char[n];
 	cd[n - 1] = '\0';
 	for (i = 1; i <= n; ++i)
@@ -81,7 +97,7 @@ void CreateHuffmanCode(HuffmanTree HT, HuffmanCode &HC, int n)
 		while (f != 0)
 		{
 			--start;
-			if (HT[f].lchild == 0)
+			if (HT[f].lchild == c)
 				cd[start] = '0';
 			else
 				cd[start] = '1';
@@ -89,7 +105,7 @@ void CreateHuffmanCode(HuffmanTree HT, HuffmanCode &HC, int n)
 			f = HT[f].parent;
 		}
 		HC[i] = new char[n - start];
-		strcpy_s(HC[i], 20, &cd[start]);
+		strcpy_s(HC[i], n - start, &cd[start]);
 	}
 	delete cd;
 }
@@ -98,10 +114,15 @@ void CreateHuffmanCode(HuffmanTree HT, HuffmanCode &HC, int n)
 int main()
 {
 	int n;
-	cout << "请输入 即将输入的叶子节点个数" << endl;
+	cout << "请输入即将输入的叶子节点个数" << endl;
 	cin >> n;
-	HuffmanTree *HT = new char *[n + 1];
-	HuffmanCode *HC = new char *[n + 1];
-	CreateHuffmanTree(*HT, n);
-	CreateHuffmanCode(*HT, *HC, n);
+	HuffmanTree HT;
+	HuffmanCode HC;
+	CreateHuffmanTree(HT, n);
+	CreateHuffmanCode(HT, HC, n);
+
+	for (int i = 1; i <= n; i++) 
+		cout << i << "的编码为：" << HC[i] << " " << endl;
+
+	system("pause");
 }
